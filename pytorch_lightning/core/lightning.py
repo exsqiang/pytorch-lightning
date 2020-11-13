@@ -1142,6 +1142,9 @@ class LightningModule(
 
             self.trainer.train_loop.optimizer_step(optimizer, None, self.trainer.batch_idx, mock_optimizer_closure)
 
+            # update will be called after every optimizer_step call
+            if self.trainer.amp_backend == AMPType.NATIVE:
+                self.trainer.scaler.update()
 
     def backward(self, loss: Tensor, optimizer: Optimizer, optimizer_idx: int, *args, **kwargs) -> None:
         """
@@ -1275,8 +1278,8 @@ class LightningModule(
             # TODO: pass the closure to the step ASAP
             with self.trainer.profiler.profile("optimizer_closure"):
                 optimizer_closure()
-            with self.trainer.profiler.profile("optimizer scaler no scaler step"):
-                optimizer.step()
+            with self.trainer.profiler.profile("optimizer scaler step"):
+                self.trainer.scaler.step(optimizer)
         elif self.trainer.amp_backend == AMPType.APEX:
             # apex amp does not yet support closures.
             # TODO: pass the closure to the step ASAP

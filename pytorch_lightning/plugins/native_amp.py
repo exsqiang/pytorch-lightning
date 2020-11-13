@@ -31,6 +31,8 @@ class NativeAMPPlugin(PrecisionPlugin):
         return model, optimizers
 
     def backward(self, closure_loss, optimizer, opt_idx, *args, **kwargs):
+        with self.trainer.profiler.profile("scale loss"):
+            closure_loss = self.trainer.scaler.scale(closure_loss)
 
         automatic_optimization = self.trainer.train_loop.automatic_optimization
 

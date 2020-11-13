@@ -124,6 +124,9 @@ class Accelerator(object):
             using_lbfgs=is_lbfgs
         )
 
+        # scale when native amp
+        if automatic_optimization and using_native_amp:
+            self.trainer.scaler.update()
 
     def optimizer_zero_grad(self, batch_idx, optimizer, opt_idx):
         model_ref = self.trainer.get_model()
