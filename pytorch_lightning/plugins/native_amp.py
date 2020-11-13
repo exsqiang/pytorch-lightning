@@ -81,6 +81,10 @@ class LightningGradScaler(torch.cuda.amp.GradScaler):
         assert len(optimizer_state["found_inf_per_device"]) > 0, "No inf checks were recorded for this optimizer."
         with self.trainer.profiler.profile("amp scaler optim get inf sum"):
             items = (v.item() for v in optimizer_state["found_inf_per_device"].values())
+        with self.trainer.profiler.profile("amp scaler set devices"):
+            print(set(v.device for v in optimizer_state["found_inf_per_device"].values()))
+        with self.trainer.profiler.profile("amp scaler vals"):
+            print(set(v.item() for v in optimizer_state["found_inf_per_device"].values()))
         with self.trainer.profiler.profile("amp scaler optim step inf sum"):
             num_infs = sum(items)
         print("NUM INF DEVICE", len(optimizer_state["found_inf_per_device"].values()))
